@@ -1,5 +1,6 @@
 import webpack from 'webpack';
- 
+import path from 'path';
+
 module.exports = {
     mode: 'development',
     /* webpack-dev-server를 콘솔이 아닌 자바스크립트로 실행 할 땐,
@@ -9,7 +10,8 @@ module.exports = {
     entry: [
         './src/index.js',
         'webpack-dev-server/client?http://0.0.0.0:4000', // 개발서버의 포트가 이 부분에 입력되어야 제대로 작동합니다
-        'webpack/hot/only-dev-server'
+        'webpack/hot/only-dev-server',
+        './src/style.css'
     ],
  
     output: {
@@ -52,9 +54,18 @@ module.exports = {
           test: /\.(js|jsx)$/,
           exclude: /node_modules/,
           use: ['babel-loader']
+        },
+        {
+          test: /\.css$/,
+          use: [ 'style-loader', 'css-loader' ]
         }
       ]
     },
+
+    resolve: {
+      modules: [path.resolve(__dirname, "src"), "node_modules"]
+    },
+
     performance: {
       hints: process.env.NODE_ENV === 'production' ? "warning" : false
     }
