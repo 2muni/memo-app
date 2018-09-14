@@ -9,4 +9,4 @@ const Account = new Schema({
   created: { type: Date, default: Date.now }
 });
 
-export default mongoose.model('accout', Account);
+export default mongoose.model('account', Account);
