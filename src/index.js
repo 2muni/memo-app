@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
-import { Register } from 'containers'
+import { Register, Login } from 'containers'
  
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
@@ -15,9 +15,10 @@ const title = 'Memo_App!';
 ReactDOM.render(
   <Provider store={store}>
     <Router>
-      <div>
+      <React.Fragment>
         <Route path="/register" component={Register}/>
-      </div>
+        <Route path="/login" component={Login}/>
+      </React.Fragment>
     </Router>
   </Provider>
   ,
