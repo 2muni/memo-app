@@ -118,8 +118,20 @@ router.post('/signin', (req, res) => {
   });
 });
 
+/*
+    GET CURRENT USER INFO GET /api/account/getInfo
+    ERROR CODES:
+        1: THERE IS NO LOGIN DATA
+*/
 router.get('/getinfo', (req, res) => {
-  res.json({ info: null });
+  if(typeof req.session.loginInfo === "undefined") {
+    return res.status(401).json({
+      error: "THERE IS NO LOGIN DATA",
+      code: 1
+    });
+  }
+
+  res.json({ info: req.session.loginInfo });
 });
 
 router.post('/logout', (req, res) => {

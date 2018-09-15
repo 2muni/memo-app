@@ -42,7 +42,7 @@ export default function authentication(state = initialState, action) {
           error: action.error
         }
       }
-      
+
     /* LOGIN */
     case types.AUTH_LOGIN:
       return {
@@ -70,7 +70,36 @@ export default function authentication(state = initialState, action) {
           status: 'FAILURE'
         }
       }
+      
+    /* CHECK SESSIONS */
+    case types.AUTH_GET_STATUS:
+      return {
+        ...state,
+        status: {
+          ...state.staus,
+          isLoggedIn: true
+        }
+      }
+    case types.AUTH_GET_STATUS_SUCCESS:
+      return {
+        ...state,
+        status: {
+          ...state.status,
+          valid: true,
+          currentUser: action.username
+        }
+      }
+    case types.AUTH_GET_STATUS_FAILURE:
+      return {
+        ...state,
+        status: {
+          ...state.status,
+          valid: false,
+          isLoggedIn: false
+        }
+      }
     default:
       return state;
   }
+
 };

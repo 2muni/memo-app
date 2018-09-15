@@ -8,6 +8,16 @@ class Authentication extends React.Component {
     password: ""
   }
 
+  handleKeyPress = (e) => {
+    if(e.charCode == 13) {
+      if(this.props.mode) {
+        this.handleLogin();
+      }else {
+        this.handleRegister();
+      }
+    }
+  }
+
   handleChange = (e) => {
     const nextState = {};
     nextState[e.target.name] = e.target.value;
@@ -63,6 +73,7 @@ class Authentication extends React.Component {
             name="password"
             type="password"
             className="validate"
+            onKeyPress={this.handleKeyPress}
             onChange={this.handleChange}
             value={this.state.password} />
         </div>

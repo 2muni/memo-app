@@ -6,6 +6,9 @@ import {
   AUTH_LOGIN,
   AUTH_LOGIN_SUCCESS,
   AUTH_LOGIN_FAILURE,
+  AUTH_GET_STATUS,
+  AUTH_GET_STATUS_SUCCESS,
+  AUTH_GET_STATUS_FAILURE,
 } from './ActionTypes';
 
 /* REGISTER */
@@ -75,5 +78,39 @@ export function loginSuccess(username) {
 export function loginFailure() {
   return {
     type: AUTH_LOGIN_FAILURE
+  }
+}
+
+/* GET STATUS */
+export function getStatusRequest() {
+  return (dispatch) => {
+    // inform Get Status API is Starting
+    dispatch(getStatus());
+
+    return axios.get('/api/account/getInfo')
+    .then((response) => {
+      dispatch(getStatusSuccess(response.data.info.username)); // HTTP 통신을 통해 username취득
+    }).catch((error) => {
+      dispatch(getStatusFailure());
+    });
+  }
+}
+
+export function getStatus() {
+  return {
+    type: AUTH_GET_STATUS
+  }
+}
+
+export function getStatusSuccess(username) {
+  return {
+    type: AUTH_GET_STATUS_SUCCESS,
+    username
+  }
+}
+
+export function getStatusFailure() {
+  return {
+    type: AUTH_GET_STATUS_FAILURE
   }
 }
