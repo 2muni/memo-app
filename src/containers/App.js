@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Header } from 'components'
 import { connect } from 'react-redux';
-import { getStatusRequest } from 'actions/authentication';
+import { getStatusRequest, logoutRequest } from 'actions/authentication';
 
 class App extends React.Component {
 
@@ -41,8 +41,24 @@ class App extends React.Component {
 
           // and notify
           const $toastContent = $('<span style="color: #FFB4BA">Your session is expired, please log in again</span>');
-          M.toast({html: $toastContent});
+          M.toast({ html: $toastContent });
         }
+      }
+    );
+  }
+
+  handleLogout = () => {
+    this.props.logoutRequest().then(
+      () => {
+        M.toast({ html: 'Good Bye!' });
+
+        // EMPTIES THE SESSION
+        let loginData = {
+          isLoggedIn: false,
+          username: ''
+        };
+
+        document.cookie = 'key=' + btoa(JSON.stringify(loginData));
       }
     );
   }
@@ -54,7 +70,8 @@ class App extends React.Component {
 
     return (
       <React.Fragment>
-        {isAuth ? undefined : <Header isLoggedIn={this.props.status.isLoggedIn} />}
+        {isAuth ? undefined : <Header isLoggedIn={this.props.status.isLoggedIn}
+                                      onLogout={this.handleLogout} />}
       </React.Fragment>
     )
   }
@@ -70,6 +87,9 @@ const mapDispatchToProps = (dispatch) => {
   return {
     getStatusRequest: () => {
       return dispatch(getStatusRequest());
+    },
+    logoutRequest: () => {
+      return dispatch(logoutRequest());
     }
   }
 }

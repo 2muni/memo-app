@@ -15,7 +15,7 @@ class Header extends React.Component {
 
     const logoutButton = (
       <li>
-        <a>
+        <a onClick={this.props.onLogout}>
           <i className="material-icons">lock_open</i>
         </a>
       </li>
@@ -40,7 +40,8 @@ class Header extends React.Component {
 }
 
 Header.propTypes = {
-  isLoggedIn: PropTypes.bool
+  isLoggedIn: PropTypes.bool,
+  onLogout: PropTypes.func
 }
 
 Header.defaultProps = {

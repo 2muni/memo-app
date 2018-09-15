@@ -134,8 +134,14 @@ router.get('/getinfo', (req, res) => {
   res.json({ info: req.session.loginInfo });
 });
 
+/*
+    LOGOUT: POST /api/account/logout
+*/
 router.post('/logout', (req, res) => {
-  return res.json({ success: true });
+  // req.session.destroy() 메소드로 세션을 파괴
+  req.session.destroy(err => { if(err) throw err; });
+  return res.json({ sucess: true });
 });
+
 
 export default router;

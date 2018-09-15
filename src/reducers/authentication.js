@@ -70,7 +70,7 @@ export default function authentication(state = initialState, action) {
           status: 'FAILURE'
         }
       }
-      
+
     /* CHECK SESSIONS */
     case types.AUTH_GET_STATUS:
       return {
@@ -96,6 +96,17 @@ export default function authentication(state = initialState, action) {
           ...state.status,
           valid: false,
           isLoggedIn: false
+        }
+      }
+
+    /* LOGOUT */
+    case types.AUTH_LOGOUT:
+      return {
+        ...state,
+        status: {
+          ...state.status,
+          isLoggedIn: false,
+          currentUser: ''
         }
       }
     default:

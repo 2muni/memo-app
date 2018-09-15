@@ -9,6 +9,7 @@ import {
   AUTH_GET_STATUS,
   AUTH_GET_STATUS_SUCCESS,
   AUTH_GET_STATUS_FAILURE,
+  AUTH_LOGOUT
 } from './ActionTypes';
 
 /* REGISTER */
@@ -112,5 +113,21 @@ export function getStatusSuccess(username) {
 export function getStatusFailure() {
   return {
     type: AUTH_GET_STATUS_FAILURE
+  }
+}
+
+/* Logout */
+export function logoutRequest() {
+  return (dispatch) => {
+    return axios.post('/api/account/logout')
+    .then((response) => {
+      dispatch(logout());
+    });
+  }
+}
+
+export function logout() {
+  return {
+    type: AUTH_LOGOUT
   }
 }
