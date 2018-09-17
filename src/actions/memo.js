@@ -52,37 +52,46 @@ export function memoPostFailure(error) {
 */
 export function memoListRequest(isInitial, listType, id, username) {
   return (dispatch) => {
-      // inform memo list API is starting
-      dispatch(memoList());
+    // inform memo list API is starting
+    dispatch(memoList());
 
-      const url = '/api/memo';
+    let url = '/api/memo';
 
-      return axios.get(url)
+    if (typeof username === "undefined") {
+      // username not given, load public memo
+      url = isInitial ? url : `${url}/${listType}/${id}`; // 처음로딩이면 '/api/memo', 아니면 /api/memo/listType/id
+      // or url + '/' + listType + '/' +  id
+    } else {
+      // load memos of a user
+      url = isInitial ? `${url}/${username}` : `${url}/${username}/${listType}/${id}`;
+    }
+
+    return axios.get(url)
       .then((response) => {
-          dispatch(memoListSuccess(response.data, isInitial, listType));
+        dispatch(memoListSuccess(response.data, isInitial, listType));
       }).catch((error) => {
-          dispatch(memoListFailure());
+        dispatch(memoListFailure());
       });
   };
 }
 
 export function memoList() {
   return {
-      type: MEMO_LIST
+    type: MEMO_LIST
   };
 }
 
 export function memoListSuccess(data, isInitial, listType) {
   return {
-      type: MEMO_LIST_SUCCESS,
-      data,
-      isInitial,
-      listType
+    type: MEMO_LIST_SUCCESS,
+    data,
+    isInitial,
+    listType
   };
 }
 
 export function memoListFailure() {
   return {
-      type: MEMO_LIST_FAILURE
+    type: MEMO_LIST_FAILURE
   };
 }

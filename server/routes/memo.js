@@ -67,6 +67,54 @@ router.get('/', (req, res) => {
       res.json(memos);
     });
 });
+/*
+    READ ADDITIONAL (OLD/NEW) MEMO: GET /api/memo/:listType/:id
+*/
+router.get('/:listType/:id', (req, res) => {
+  let listType = req.params.listType;
+  let id = req.params.id;
+
+  // CHECK LIST TYPE VALIDITY
+  // url 을 통해 들어온 listType 파라메터가 old/new 둘 다 아닐경우
+  if (listType !== 'old' && listType !== 'new') {
+    return res.status(400).json({
+      error: "INVALID LISTTYPE",
+      code: 1
+    });
+  }
+
+  // CHECK MEMO ID VALIDITY
+  // 들어온 id 값이 mongodb 형식인지 조회
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      error: "INVALID ID",
+      code: 2
+    });
+  }
+
+  let objId = new mongoose.Types.ObjectId(req.params.id);
+
+  if (listType === 'new') {
+    // GET NEWER MEMO
+    Memo.find({ _id: { $gt: objId } })
+      .sort({ _id: -1 }) //내림차순
+      .limit(6)
+      .exec((err, memos) => {
+        if (err) throw err;
+        return res.json(memos);
+      });
+  } else {
+    // GET OLDER MEMO
+    Memo.find({ _id: { $lt: objId } })
+      .sort({ _id: -1 }) //오름차순이 아닌 내림차순이어야함. 정렬하는 순서는 같다 (home에서 보여질 때)
+      .limit(6)
+      .exec((err, memos) => {
+        if (err) throw err;
+        return res.json(memos);
+      });
+  }
+});
+
 
 // MODIFY MEMO
 router.put('/:id', (req, res) => {
