@@ -52,6 +52,56 @@ export default function memo(state = initialState, action) {
           error: action.error
         }
       };
+    case types.MEMO_LIST:
+      return {
+        ...state,
+        list: {
+          ...state.list,
+          status: 'WAITING'
+        }
+      };
+    case types.MEMO_LIST_SUCCESS:
+      if (action.isInitial) {
+        return {
+          ...state,
+          list: {
+            ...state.list,
+            status: 'SUCCESS',
+            data: action.data,
+            isLast: action.data.length < 6
+          }
+        }
+      } else {
+        if (action.listType === 'new') { // 배열의 앞부분에 추가
+          return {
+            ...state,
+            list: {
+              ...state.list,
+              status: 'SUCCESS',
+              data: [...action.data, ...state.list.data]
+            }
+          }
+        } else { //action.listType === 'older' //배열의 뒷부분에 추가
+          return {
+            ...state,
+            list: {
+              ...state.list,
+              status: 'SUCCESS',
+              data: [...state.list.data, ...action.data],
+              isLast: action.data.length < 6
+            }
+          }
+        }
+      }
+      return state;
+    case types.MEMO_LIST_FAILURE:
+      return {
+        ...state,
+        list: {
+          ...state.list,
+          status: 'FAILURE'
+        }
+      };
     default:
       return state;
   }
