@@ -1,52 +1,71 @@
 /* Authentication */
 .auth {
   margin-top: 50px;
-    text-align: center;
+  text-align: center;
 }
 .logo {
-    text-align: center;
-    font-weight: 100;
-    font-size: 80px;
-    -webkit-user-select: none;
-    /* Chrome all / Safari all */
-    -moz-user-select: none;
-    /* Firefox all */
-    -ms-user-select: none;
-    /* IE 10+ */
-    user-select: none;
-    /* Likely future */
+  text-align: center;
+  font-weight: 100;
+  font-size: 80px;
+  -webkit-user-select: none;
+  /* Chrome all / Safari all */
+  -moz-user-select: none;
+  /* Firefox all */
+  -ms-user-select: none;
+  /* IE 10+ */
+  user-select: none;
+  /* Likely future */
 }
 a.logo {
-    color: #5B5B5B;
+  color: #5B5B5B;
 }
 a {
-    cursor: pointer;
+  cursor: pointer;
 }
 .auth .card {
-    width: 400px;
-    margin: 0 auto;
+  width: 400px;
+  margin: 0 auto;
 }
 @media screen and (max-width: 480px) {
   .auth .card {
     width: 100%;
   }
-  .logo {
+.logo {
     font-size: 60px;
   }
 }
 .auth .header {
-    font-size: 18px;
+  font-size: 18px;
 }
 .auth .row {
-    margin-bottom: 0px;
+  margin-bottom: 0px;
 }
 .auth .username {
   margin-top: 0px;
 }
 .auth .btn {
-    width: 90%;
+  width: 90%;
 }
 .auth .footer {
-    border-top: 1px solid #E9E9E9;
-    padding-bottom: 21px;
+  border-top: 1px solid #E9E9E9;
+  padding-bottom: 21px;
+}
+
+/* WRITE */
+.write .materialize-textarea {
+  padding: 0px;
+  padding-bottom: 36px;
+  margin-bottom: 0px;
+  font-size: 18px;
+}
+.write .card-content {
+  padding-bottom: 10px;
+}
+.write .card-action {
+  text-align: right;
+}
+
+/* Home 위쪽 여백 20px */
+.wrapper {
+  margin-top: 20px;
 }
