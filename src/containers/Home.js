@@ -5,6 +5,10 @@ import { memoPostRequest, memoListRequest } from 'actions/memo';
 
 class Home extends React.Component {
 
+  state = {
+    loadingState: false
+  }
+
   handlePost = (contents) => {
     return this.props.memoPostRequest(contents).then(
       () => {
@@ -62,6 +66,28 @@ class Home extends React.Component {
     return this.props.memoListRequest(false, 'new', this.props.memoData[0]._id);
   }
 
+  loadOldMemo = () => {
+    // CANCEL IF USER IS READING THE LAST PAGE
+    if (this.props.isLast) {
+      return new Promise(
+        (resolve, reject) => {
+          resolve();
+        }
+      );
+    }
+
+    // GET ID OF THE MEMO AT THE BOTTOM
+    let lastId = this.props.memoData[this.props.memoData.length - 1]._id;
+
+    // START REQUEST
+    return this.props.memoListRequest(false, 'old', lastId, this.props.username).then(() => {
+      // IF IT IS LAST PAGE, NOTIFY
+      if (this.props.isLast) {
+        M.toast({ html: 'You are reading the last page' });
+      }
+    });
+  }
+
   componentDidMount() {
     // LOAD NEW MEMO EVERY 5 SECONDS
     const loadMemoLoop = () => {
@@ -70,7 +96,46 @@ class Home extends React.Component {
           this.memoLoaderTimeoutId = setTimeout(loadMemoLoop, 5000);
         }
       );
+      $(window).scroll(() => {
+        // WHEN HEIGHT UNDER SCROLLBOTTOM IS LESS THEN 250
+        if ($(document).height() - $(window).height() - $(window).scrollTop() < 250) {
+          if (!this.state.loadingState) {
+            this.loadOldMemo();
+            this.setState({
+              loadingState: true
+            });
+          }
+        } else {
+          if (this.state.loadingState) {
+            this.setState({
+              loadingState: false
+            });
+          }
+        }
+      });
     };
+
+    const loadUntilScrollable = () => {
+      // IF THE SCROLLBAR DOES NOT EXIST,
+      if ($("body").height() < $(window).height()) {
+        this.loadOldMemo().then(
+          () => {
+            // DO THIS RECURSIVELY UNLESS IT'S LAST PAGE
+            if (!this.props.isLast) {
+              loadUntilScrollable();
+            }
+          }
+        );
+      }
+    };
+
+    this.props.memoListRequest(true).then(
+      () => {
+        // BEGIN NEW MEMO LOADING LOOP
+        loadUntilScrollable();
+        loadMemoLoop();
+      }
+    );
 
     this.props.memoListRequest(true).then(
       () => {
@@ -83,6 +148,9 @@ class Home extends React.Component {
   componentWillUnmount() {
     // STOPS THE loadMemoLoop
     clearTimeout(this.memoLoaderTimeoutId);
+
+    // REMOVE WINDOWS SCROLL LISTENER
+    $(window).unbind();
   }
 
   render() {
