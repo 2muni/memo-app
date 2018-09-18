@@ -175,6 +175,40 @@ export default function memo(state = initialState, action) {
           error: action.error
         }
       };
+
+    /* Star toggle */
+    case types.MEMO_STAR:
+      return {
+        ...state,
+        star: {
+          ...state.star,
+          status: 'WAITING',
+          error: -1
+        }
+      }
+    case types.MEMO_STAR_SUCCESS:
+      let starBefore = state.list.data.slice(0, action.index);
+      let starAfter = state.list.data.slice(action.index + 1);
+      return {
+        ...state,
+        star: {
+          ...state.star,
+          status: 'SUCCESS'
+        },
+        list: {
+          ...state.list,
+          data: [...starBefore, action.memo, ...starAfter]
+        }
+      };
+    case types.MEMO_STAR_FAILURE:
+      return {
+        ...state,
+        star: {
+          ...state.star,
+          status: 'FAILURE',
+          error: action.error
+        }
+      }
     default:
       return state;
   }

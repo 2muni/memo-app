@@ -39,6 +39,12 @@ class Memo extends React.Component {
     this.props.onRemove(id, index);
   }
 
+  handleStar = () => {
+    const id = this.props.data._id;
+    const index = this.props.index;
+    this.props.onStar(id, index);
+  }
+
   componentDidUpdate() {
     // WHEN COMPONENT UPDATES, INITIALIZE DROPDOWN
     // (TRIGGERED WHEN LOGGED IN)
@@ -52,6 +58,11 @@ class Memo extends React.Component {
   }
 
   render() {
+
+    // IF IT IS STARRED ( CHECKS WHETHER THE NICKNAME EXISTS IN THE ARRAY )
+    // RETURN STYLE THAT HAS A YELLOW COLOR
+    const starStyle = (this.props.data.starred.indexOf(this.props.currentUser) > -1) ? { color: '#ff9980' } : {};
+
     const dropDownMenu = (
       <div className="option-button">
         <a className='dropdown-button'
@@ -80,8 +91,11 @@ class Memo extends React.Component {
           {this.props.data.contents}
         </div>
         <div className="footer">
-          <i className="material-icons log-footer-icon star icon-button">star</i>
-          <span className="star-count">0</span>
+
+          <i className="material-icons log-footer-icon star icon-button"
+            style={starStyle}
+            onClick={this.handleStar}>star</i>
+          <span className="star-count">{this.props.data.starred.length}</span>
         </div>
       </div>
     );
@@ -115,7 +129,9 @@ Memo.propTypes = {
   ownership: PropTypes.bool,
   onEdit: PropTypes.func,
   onRemove: PropTypes.func,
-  index: PropTypes.number
+  index: PropTypes.number,
+  onStar: PropTypes.func,
+  currentUser: PropTypes.string
 };
 
 Memo.defaultProps = {
@@ -137,6 +153,10 @@ Memo.defaultProps = {
   onRemove: (id, index) => {
     console.error('remove function not defined');
   },
+  onStar: (id, index) => {
+      console.error('star function not defined');
+  },
+  currentUser: '',
   index: -1
 }
 

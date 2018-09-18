@@ -261,5 +261,71 @@ router.delete('/:id', (req, res) => {
   });
 });
 
+/*
+    TOGGLES STAR OF MEMO: POST /api/memo/star/:id
+    ERROR CODES
+        1: INVALID ID
+        2: NOT LOGGED IN
+        3: NO RESOURCE
+*/
+router.post('/star/:id', (req, res) => {
+  // CHECK MEMO ID VALIDITY
+  if(!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+          error: "INVALID ID",
+          code: 1
+      });
+  }
+
+  // CHECK LOGIN STATUS
+  if(typeof req.session.loginInfo === 'undefined') {
+      return res.status(403).json({
+          error: "NOT LOGGED IN",
+          code: 2
+      });
+  }
+
+  // FIND MEMO
+  Memo.findById(req.params.id, (err, memo) => {
+      if(err) throw err;
+
+      // MEMO DOES NOT EXIST
+      if(!memo) {
+          return res.status(404).json({
+              error: "NO RESOURCE",
+              code: 3
+          });
+      }
+
+      // GET INDEX OF USERNAME IN THE ARRAY
+      // 해당 id의 메모의 statted 필드(배열)에 별점을 주려는(로그인유저) 유저가 있는지 확인
+      let index = memo.starred.indexOf(req.session.loginInfo.username);
+
+      // CHECK WHETHER THE USER ALREADY HAS GIVEN A STAR
+      // indexOf 메소드의 결과가 없을 경우 -1 이 리턴된다.
+      let hasStarred = (index === -1) ? false : true;
+      // 결과가 없을 경우 false, 있을 경우 true
+
+      if(!hasStarred) { //결과가 없을 경우
+          // IF IT DOES NOT EXIST
+          // starre 필드에 유저이름 푸쉬(배열의 맨 뒤에 원소추가)
+          memo.starred.push(req.session.loginInfo.username);
+      } else {
+          // ALREADY starred
+          // 이미 존재한다면 배열에서 해당유저의 원소 삭제(토글)
+          memo.starred.splice(index, 1);
+      }
+
+      // SAVE THE MEMO
+      memo.save((err, memo) => {
+          if(err) throw err;
+          res.json({
+              success: true,
+              'has_starred': !hasStarred, // 별을 주었는지, 가져갔는지 정보 (줬으면 true, 가져갔으면 false)
+              memo
+          });
+      });
+  });
+});
 
 export default router;
