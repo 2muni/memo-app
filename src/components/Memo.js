@@ -10,9 +10,9 @@ class Memo extends React.Component {
 
   toggleEdit = () => {
     if (this.state.editMode) {
-      let id = this.props.data._id;
-      let index = this.props.index;
-      let contents = this.state.value;
+      const id = this.props.data._id;
+      const index = this.props.index;
+      const contents = this.state.value;
 
       this.props.onEdit(id, index, contents).then(() => {
         this.setState({
@@ -30,6 +30,12 @@ class Memo extends React.Component {
     this.setState({
       value: e.target.value
     });
+  }
+
+  handleRemove = () => {
+    const id = this.props.data._id;
+    const index = this.props.index;
+    this.props.onRemove(id, index);
   }
 
   componentDidUpdate() {
@@ -52,7 +58,7 @@ class Memo extends React.Component {
         </a>
         <ul id={`dropdown-${this.props.data._id}`} className='dropdown-content'>
           <li><a onClick={this.toggleEdit}>Edit</a></li>
-          <li><a>Remove</a></li>
+          <li><a onClick={this.handleRemove}>Remove</a></li>
         </ul>
       </div>
     );
@@ -101,6 +107,7 @@ Memo.propTypes = {
   data: PropTypes.object,
   ownership: PropTypes.bool,
   onEdit: PropTypes.func,
+  onRemove: PropTypes.func,
   index: PropTypes.number
 };
 
@@ -119,6 +126,9 @@ Memo.defaultProps = {
   ownership: true,
   onEdit: (id, index, contents) => {
     console.error('onEdit function not defined');
+  },
+  onRemove: (id, index) => {
+    console.error('remove function not defined');
   },
   index: -1
 }

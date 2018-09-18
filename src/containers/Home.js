@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Write, MemoList } from 'components';
 import { connect } from 'react-redux';
-import { memoPostRequest, memoListRequest, memoEditRequest } from 'actions/memo';
+import { memoPostRequest, memoListRequest, memoEditRequest, memoRemoveRequest } from 'actions/memo';
 
 class Home extends React.Component {
 
@@ -56,7 +56,7 @@ class Home extends React.Component {
     return this.props.memoEditRequest(id, index, contents).then(
       () => {
         if (this.props.editStatus.status === "SUCCESS") {
-          M.toast({html: 'Success!'});
+          M.toast({ html: 'Success!' });
         } else {
           /*
             ERROR CODES
@@ -80,7 +80,7 @@ class Home extends React.Component {
 
           // NOTIFY ERROR
           let $toastContent = $('<span style="color: #FFB4BA">' + errorMessage[error - 1] + '</span>');
-          M.toast({html: $toastContent});
+          M.toast({ html: $toastContent });
 
           // IF NOT LOGGED IN, REFRESH THE PAGE AFTER 2 SECONDS
           if (error === 4) {
@@ -90,6 +90,47 @@ class Home extends React.Component {
         }
       }
     );
+  }
+
+  handleRemove = (id, index) => {
+    this.props.memoRemoveRequest(id, index).then(() => {
+      if (this.props.removeStatus.status === "SUCCESS") {
+        // LOAD MORE MEMO IF THERE IS NO SCROLLBAR
+        // 1 SECOND LATER. (ANIMATION TAKES 1SEC)
+        // 메모를 지우는 통신을 성공하고 1초 뒤에 스크롤이 있는지 확인 => 없으면 전 메모 불러와 스크롤 생성
+        setTimeout(() => {
+          if ($("body").height() < $(window).height()) {
+            this.loadOldMemo();
+          }
+        }, 1000);
+      } else {
+        // ERROR
+        /*
+            DELETE MEMO: DELETE /api/memo/:id
+            ERROR CODES
+                1: INVALID ID
+                2: NOT LOGGED IN
+                3: NO RESOURCE
+                4: PERMISSION FAILURE
+        */
+        let errorMessage = [
+          'Something broke',
+          'You are not logged in',
+          'That memo does not exist',
+          'You do not have permission'
+        ];
+
+        // NOTIFY ERROR
+        let $toastContent = $('<span style="color: #FFB4BA">' + errorMessage[this.props.removeStatus.error - 1] + '</span>');
+        M.toast({html: $toastContent});
+
+
+        // IF NOT LOGGED IN, REFRESH THE PAGE
+        if (this.props.removeStatus.error === 2) {
+          setTimeout(() => { location.reload(false) }, 2000);
+        }
+      }
+    });
   }
 
   loadNewMemo() {
@@ -199,8 +240,9 @@ class Home extends React.Component {
       <div className="wrapper">
         {this.props.isLoggedIn ? write : undefined}
         <MemoList data={this.props.memoData}
-                  currentUser={this.props.currentUser}
-                  onEdit={this.handleEdit} />
+          currentUser={this.props.currentUser}
+          onEdit={this.handleEdit}
+          onRemove={this.handleRemove} />
       </div>
     );
   }
@@ -214,7 +256,8 @@ const mapStateToProps = (state) => {
     memoData: state.memo.list.data,
     listStatus: state.memo.list.status,
     isLast: state.memo.list.isLast,
-    editStatus: state.memo.edit
+    editStatus: state.memo.edit,
+    removeStatus: state.memo.remove
   };
 }
 
@@ -228,6 +271,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     memoEditRequest: (id, index, contetns) => {
       return dispatch(memoEditRequest(id, index, contetns));
+    },
+    memoRemoveRequest: (id, index) => {
+      return dispatch(memoRemoveRequest(id, index));
     }
   };
 };
