@@ -1,4 +1,5 @@
 import * as React from 'react';
+import TimeAgo from 'react-timeago';
 import PropTypes from 'prop-types';
 
 class Memo extends React.Component {
@@ -49,6 +50,7 @@ class Memo extends React.Component {
     // (TRIGGERED WHEN REFRESHED)
     $('.dropdown-button').dropdown();
   }
+
   render() {
     const dropDownMenu = (
       <div className="option-button">
@@ -63,11 +65,16 @@ class Memo extends React.Component {
       </div>
     );
 
+    const editedInfo = (
+      <span style={{ color: '#AAB5BC' }}> · Edited <TimeAgo date={this.props.data.date.edited} live={true} /></span>
+    );
+
     const memoView = (
       <div className="card">
         <div className="info">
-          <a className="username">{this.props.data.writer}</a> wrote a log · 1 seconds ago
-                  {this.props.ownership ? dropDownMenu : undefined}
+          <a className="username">{this.props.data.writer}</a> wrote a log · <TimeAgo date={this.props.data.date.created} />
+          {this.props.data.is_edited ? editedInfo : undefined}
+          {this.props.ownership ? dropDownMenu : undefined}
         </div>
         <div className="card-content">
           {this.props.data.contents}
