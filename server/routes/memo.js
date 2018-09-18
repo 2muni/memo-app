@@ -115,11 +115,95 @@ router.get('/:listType/:id', (req, res) => {
   }
 });
 
-
 // MODIFY MEMO
+/*
+    MODIFY MEMO: PUT /api/memo/:id
+    BODY SAMPLE: { contents: "sample "}
+    ERROR CODES
+        1: INVALID ID,
+        2: CONTENTS IS NOT STRING
+        3: EMPTY CONTENTS
+        4: NOT LOGGED IN
+        5: NO RESOURCE
+        6: PERMISSION FAILURE
+*/
 router.put('/:id', (req, res) => {
+ 
+  // CHECK MEMO ID VALIDITY
+  // url 파라메터 값으로 전달받은 id값이 몽고db 형식인지 검사
+  if(!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+          error: "INVALID ID",
+          code: 1
+      });
+  }
 
+  // CHECK CONTENTS VALID
+  // 수정할 내용이 문자열이 아닌 경우
+  if(typeof req.body.contents !== 'string') {
+      return res.status(400).json({
+          error: "CONTENTS IS NOT STRING",
+          code: 2
+      });
+  }
+
+  // 수정할 내용이 비어있는 경우
+  if(req.body.contents === "") {
+      return res.status(400).json({
+          error: "EMPTY CONTENTS",
+          code: 3
+      });
+  }
+
+  // CHECK LOGIN STATUS
+  // 세션을 통해 로그인 여부 확인
+  if(typeof req.session.loginInfo === 'undefined') {
+      return res.status(403).json({
+          error: "NOT LOGGED IN",
+          code: 4
+      });
+  }
+
+  // FIND MEMO
+  // id 로 도큐먼트 조회
+  Memo.findById(req.params.id, (err, memo) => {
+      if(err) throw err;
+
+      // IF MEMO DOES NOT EXIST
+      // id는 몽고db 형식이지만 메모가 없을 경우
+      if(!memo) {
+          return res.status(404).json({
+              error: "NO RESOURCE",
+              code: 5
+          });
+      }
+
+      // IF EXISTS, CHECK WRITER
+      // 검색된 메모의 작성자와 로그인된 데이터가 다른 경우 - 권한 없음
+      if(memo.writer != req.session.loginInfo.username) {
+          return res.status(403).json({
+              error: "PERMISSION FAILURE",
+              code: 6
+          });
+      }
+
+      // MODIFY AND SAVE IN DATABASE
+      // 결격사항이 없을 경우 메모를 수정하고 DB 에 저장
+      memo.contents = req.body.contents;
+      memo.date.edited = new Date();
+      memo.is_edited = true;
+
+      memo.save((err, memo) => {
+          if(err) throw err;
+          return res.json({
+              success: true,
+              memo
+          });
+      });
+
+  });
 });
+
 
 // DELETE MEMO
 router.delete('/:id', (req, res) => {

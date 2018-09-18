@@ -102,6 +102,39 @@ export default function memo(state = initialState, action) {
           status: 'FAILURE'
         }
       };
+    case types.MEMO_EDIT:
+      return {
+        ...state,
+        edit: {
+          ...state.edit,
+          status: 'WAITING',
+          error: -1,
+          memo: undefined
+        }
+      };
+    case types.MEMO_EDIT_SUCCESS:
+      let editBefore = state.list.data.slice(0, action.index);
+      let editAfter = state.list.data.slice(action.index + 1);
+      return {
+        ...state,
+        edit: {
+          ...state.edit,
+          status: 'SUCCESS'
+        },
+        list: {
+          ...state.list,
+          data: [...editBefore, action.memo, ...editAfter]
+        }
+      };
+    case types.MEMO_EDIT_FAILURE:
+      return {
+        ...state,
+        edit: {
+          ...state.edit,
+          status: 'FAILURE',
+          error: action.error
+        }
+      };
     default:
       return state;
   }

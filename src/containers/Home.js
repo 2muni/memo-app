@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Write, MemoList } from 'components';
 import { connect } from 'react-redux';
-import { memoPostRequest, memoListRequest } from 'actions/memo';
+import { memoPostRequest, memoListRequest, memoEditRequest } from 'actions/memo';
 
 class Home extends React.Component {
 
@@ -50,6 +50,46 @@ class Home extends React.Component {
         }
       }
     )
+  }
+
+  handleEdit = (id, index, contents) => {
+    return this.props.memoEditRequest(id, index, contents).then(
+      () => {
+        if (this.props.editStatus.status === "SUCCESS") {
+          M.toast({html: 'Success!'});
+        } else {
+          /*
+            ERROR CODES
+                1: INVALID ID,
+                2: CONTENTS IS NOT STRING
+                3: EMPTY CONTENTS
+                4: NOT LOGGED IN
+                5: NO RESOURCE
+                6: PERMISSION FAILURE
+          */
+          let errorMessage = [
+            'Something broke',
+            'Contents should be string',
+            'Please write something',
+            'You are not logged in',
+            'That memo does not exist anymore',
+            'You do not have permission'
+          ];
+
+          let error = this.props.editStatus.error;
+
+          // NOTIFY ERROR
+          let $toastContent = $('<span style="color: #FFB4BA">' + errorMessage[error - 1] + '</span>');
+          M.toast({html: $toastContent});
+
+          // IF NOT LOGGED IN, REFRESH THE PAGE AFTER 2 SECONDS
+          if (error === 4) {
+            setTimeout(() => { location.reload(false) }, 2000);
+          }
+
+        }
+      }
+    );
   }
 
   loadNewMemo() {
@@ -159,7 +199,8 @@ class Home extends React.Component {
       <div className="wrapper">
         {this.props.isLoggedIn ? write : undefined}
         <MemoList data={this.props.memoData}
-          currentUser={this.props.currentUser} />
+                  currentUser={this.props.currentUser}
+                  onEdit={this.handleEdit} />
       </div>
     );
   }
@@ -172,7 +213,8 @@ const mapStateToProps = (state) => {
     currentUser: state.authentication.status.currentUser,
     memoData: state.memo.list.data,
     listStatus: state.memo.list.status,
-    isLast: state.memo.list.isLast
+    isLast: state.memo.list.isLast,
+    editStatus: state.memo.edit
   };
 }
 
@@ -183,6 +225,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     memoListRequest: (isInitial, listType, id, username) => {
       return dispatch(memoListRequest(isInitial, listType, id, username));
+    },
+    memoEditRequest: (id, index, contetns) => {
+      return dispatch(memoEditRequest(id, index, contetns));
     }
   };
 };
