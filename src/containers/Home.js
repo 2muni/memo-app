@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Write, MemoList } from 'components';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+
 import {
   memoPostRequest,
   memoListRequest,
@@ -12,7 +14,8 @@ import {
 class Home extends React.Component {
 
   state = {
-    loadingState: false
+    loadingState: false,
+    initiallyLoaded: false
   }
 
   handlePost = (contents) => {
@@ -159,7 +162,7 @@ class Home extends React.Component {
 
           // NOTIFY ERROR
           const $toastContent = $('<span style="color: #FFB4BA">' + errorMessage[this.props.starStatus.error - 1] + '</span>');
-          M.toast({html: $toastContent});
+          M.toast({ html: $toastContent });
 
 
           // IF NOT LOGGED IN, REFRESH THE PAGE
@@ -180,10 +183,11 @@ class Home extends React.Component {
 
     // IF PAGE IS EMPTY, DO THE INITIAL LOADING
     if (this.props.memoData.length === 0)
-      return this.props.memoListRequest(true);
+      return this.props.memoListRequest(true, undefined, undefined, this.props.username);
 
-    return this.props.memoListRequest(false, 'new', this.props.memoData[0]._id);
+    return this.props.memoListRequest(false, 'new', this.props.memoData[0]._id, this.props.username);
   }
+
 
   loadOldMemo = () => {
     // CANCEL IF USER IS READING THE LAST PAGE
@@ -248,20 +252,26 @@ class Home extends React.Component {
       }
     };
 
-    this.props.memoListRequest(true).then(
+    this.props.memoListRequest(true, undefined, undefined, this.props.username).then(
       () => {
+        // LOAD MEMO UNTIL SCROLLABLE
+        setTimeout(loadUntilScrollable, 1000);
         // BEGIN NEW MEMO LOADING LOOP
-        loadUntilScrollable();
         loadMemoLoop();
+        this.setState({
+          initiallyLoaded: true
+        });
       }
     );
+  }
 
-    this.props.memoListRequest(true).then(
-      () => {
-        // BEGIN NEW MEMO LOADING LOOP
-        loadMemoLoop();
-      }
-    );
+  componentDidUpdate(prevProps, prevState) {
+    // 컴포넌트가 업데이트 된 이후에 현재 프롭스로 전달된 usernam과 이전 프롭스로 전달된 username 이 다르면
+    // unmount, didmount 실행
+    if (this.props.username !== prevProps.username) {
+      this.componentWillUnmount();
+      this.componentDidMount();
+    }
   }
 
   componentWillUnmount() {
@@ -270,13 +280,40 @@ class Home extends React.Component {
 
     // REMOVE WINDOWS SCROLL LISTENER
     $(window).unbind();
+
+    this.setState({
+      initiallyLoaded: false
+    });
   }
 
   render() {
     const write = (<Write onPost={this.handlePost} />);
+
+    const emptyView = (
+      <div className="container">
+        <div className="empty-page">
+          <b>{this.props.username}</b> isn't registered or hasn't written any memo
+            </div>
+      </div>
+    );
+
+    const wallHeader = (
+      <React.Fragment>
+        <div className="container wall-info">
+          <div className="card wall-info blue lighten-2 white-text">
+            <div className="card-content">
+              {this.props.username}
+            </div>
+          </div>
+        </div>
+        {this.props.memoData.length === 0 ? emptyView : undefined}
+      </React.Fragment>
+    );
+
     return (
       <div className="wrapper">
-        {this.props.isLoggedIn ? write : undefined}
+        {typeof this.props.username !== "undefined" ? wallHeader : undefined}
+        {this.props.isLoggedIn && typeof this.props.username === "undefined" ? write : undefined}
         <MemoList data={this.props.memoData}
           currentUser={this.props.currentUser}
           onEdit={this.handleEdit}
@@ -319,6 +356,14 @@ const mapDispatchToProps = (dispatch) => {
       return dispatch(memoStarRequest(id, index));
     }
   };
+};
+
+Home.propTypes = {
+  username: PropTypes.string
+};
+
+Home.defaultProps = {
+  username: undefined
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);

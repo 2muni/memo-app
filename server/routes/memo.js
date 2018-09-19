@@ -270,62 +270,125 @@ router.delete('/:id', (req, res) => {
 */
 router.post('/star/:id', (req, res) => {
   // CHECK MEMO ID VALIDITY
-  if(!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({
-          error: "INVALID ID",
-          code: 1
-      });
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({
+      error: "INVALID ID",
+      code: 1
+    });
   }
 
   // CHECK LOGIN STATUS
-  if(typeof req.session.loginInfo === 'undefined') {
-      return res.status(403).json({
-          error: "NOT LOGGED IN",
-          code: 2
-      });
+  if (typeof req.session.loginInfo === 'undefined') {
+    return res.status(403).json({
+      error: "NOT LOGGED IN",
+      code: 2
+    });
   }
 
   // FIND MEMO
   Memo.findById(req.params.id, (err, memo) => {
-      if(err) throw err;
+    if (err) throw err;
 
-      // MEMO DOES NOT EXIST
-      if(!memo) {
-          return res.status(404).json({
-              error: "NO RESOURCE",
-              code: 3
-          });
-      }
-
-      // GET INDEX OF USERNAME IN THE ARRAY
-      // 해당 id의 메모의 statted 필드(배열)에 별점을 주려는(로그인유저) 유저가 있는지 확인
-      let index = memo.starred.indexOf(req.session.loginInfo.username);
-
-      // CHECK WHETHER THE USER ALREADY HAS GIVEN A STAR
-      // indexOf 메소드의 결과가 없을 경우 -1 이 리턴된다.
-      let hasStarred = (index === -1) ? false : true;
-      // 결과가 없을 경우 false, 있을 경우 true
-
-      if(!hasStarred) { //결과가 없을 경우
-          // IF IT DOES NOT EXIST
-          // starre 필드에 유저이름 푸쉬(배열의 맨 뒤에 원소추가)
-          memo.starred.push(req.session.loginInfo.username);
-      } else {
-          // ALREADY starred
-          // 이미 존재한다면 배열에서 해당유저의 원소 삭제(토글)
-          memo.starred.splice(index, 1);
-      }
-
-      // SAVE THE MEMO
-      memo.save((err, memo) => {
-          if(err) throw err;
-          res.json({
-              success: true,
-              'has_starred': !hasStarred, // 별을 주었는지, 가져갔는지 정보 (줬으면 true, 가져갔으면 false)
-              memo
-          });
+    // MEMO DOES NOT EXIST
+    if (!memo) {
+      return res.status(404).json({
+        error: "NO RESOURCE",
+        code: 3
       });
+    }
+
+    // GET INDEX OF USERNAME IN THE ARRAY
+    // 해당 id의 메모의 statted 필드(배열)에 별점을 주려는(로그인유저) 유저가 있는지 확인
+    let index = memo.starred.indexOf(req.session.loginInfo.username);
+
+    // CHECK WHETHER THE USER ALREADY HAS GIVEN A STAR
+    // indexOf 메소드의 결과가 없을 경우 -1 이 리턴된다.
+    let hasStarred = (index === -1) ? false : true;
+    // 결과가 없을 경우 false, 있을 경우 true
+
+    if (!hasStarred) { //결과가 없을 경우
+      // IF IT DOES NOT EXIST
+      // starre 필드에 유저이름 푸쉬(배열의 맨 뒤에 원소추가)
+      memo.starred.push(req.session.loginInfo.username);
+    } else {
+      // ALREADY starred
+      // 이미 존재한다면 배열에서 해당유저의 원소 삭제(토글)
+      memo.starred.splice(index, 1);
+    }
+
+    // SAVE THE MEMO
+    memo.save((err, memo) => {
+      if (err) throw err;
+      res.json({
+        success: true,
+        'has_starred': !hasStarred, // 별을 주었는지, 가져갔는지 정보 (줬으면 true, 가져갔으면 false)
+        memo
+      });
+    });
   });
+});
+/*
+    READ MEMO OF A USER: GET /api/memo/:username
+*/
+//  맨 처음 유저의 메모 가져올 때 (6개만)
+router.get('/:username', (req, res) => {
+  Memo.find({ writer: req.params.username })
+    .sort({ "_id": -1 })
+    .limit(6)
+    .exec((err, memos) => {
+      if (err) throw err;
+      res.json(memos);
+    });
+});
+
+/*
+    READ ADDITIONAL (OLD/NEW) MEMO OF A USER: GET /api/memo/:username/:listType/:id
+*/
+// 특정 유저 메모 추가 로딩
+router.get('/:username/:listType/:id', (req, res) => {
+  let listType = req.params.listType;
+  let id = req.params.id;
+
+  // CHECK LIST TYPE VALIDITY
+  // url 로 들어온 listType 이 new/old 가 아니라면 에러 리스폰스
+  if (listType !== 'old' && listType !== 'new') {
+    return res.status(400).json({
+      error: "INVALID LISTTYPE",
+      code: 1
+    });
+  }
+
+  // CHECK MEMO ID VALIDITY
+  // url 로 들어온 id 값이 mongodb 형식인지 검사, 아니면 에러 리스폰스
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      error: "INVALID ID",
+      code: 2
+    });
+  }
+
+  // 오브젝트 아이디 생성
+  let objId = new mongoose.Types.ObjectId(req.params.id);
+
+  if (listType === 'new') {
+    // GET NEWER MEMO
+    Memo.find({ writer: req.params.username, _id: { $gt: objId } }) //_id 값이 기준 메모id 보다 큰값
+      .sort({ _id: -1 })
+      .limit(6)
+      .exec((err, memos) => {
+        if (err) throw err;
+        return res.json(memos);
+      });
+  } else {
+    // GET OLDER MEMO
+    Memo.find({ writer: req.params.username, _id: { $lt: objId } }) //_id 값이 기준 메모id 보다 작은값
+      .sort({ _id: -1 })
+      .limit(6)
+      .exec((err, memos) => {
+        if (err) throw err;
+        return res.json(memos);
+      });
+  }
 });
 
 export default router;

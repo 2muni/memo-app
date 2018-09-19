@@ -1,6 +1,7 @@
 import * as React from 'react';
 import TimeAgo from 'react-timeago';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 
 class Memo extends React.Component {
 
@@ -83,7 +84,7 @@ class Memo extends React.Component {
     const memoView = (
       <div className="card">
         <div className="info">
-          <a className="username">{this.props.data.writer}</a> wrote a log · <TimeAgo date={this.props.data.date.created} />
+          <Link to={`/wall/${this.props.data.writer}`} className="username">{this.props.data.writer}</Link> wrote a log · <TimeAgo date={this.props.data.date.created} />
           {this.props.data.is_edited ? editedInfo : undefined}
           {this.props.ownership ? dropDownMenu : undefined}
         </div>
@@ -154,7 +155,7 @@ Memo.defaultProps = {
     console.error('remove function not defined');
   },
   onStar: (id, index) => {
-      console.error('star function not defined');
+    console.error('star function not defined');
   },
   currentUser: '',
   index: -1

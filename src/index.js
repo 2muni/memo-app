@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
-import { Register, Login, App, Home } from 'containers'
+import { Register, Login, App, Home, Wall } from 'containers'
  
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
@@ -18,6 +18,7 @@ ReactDOM.render(
         <Route exact path="/" component={Home}/>
         <Route path="/register" component={Register}/>
         <Route path="/login" component={Login}/>
+        <Route path="/wall/:username" component={Wall}/>
       </React.Fragment>
     </Router>
   </Provider>

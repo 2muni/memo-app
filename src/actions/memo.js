@@ -177,34 +177,34 @@ export function memoRemoveFailure(error) {
 /* MEMO TOGGLE STAR */
 export function memoStarRequest(id, index) {
   return (dispatch) => {
-      dispatch(memoStar());
+    dispatch(memoStar());
 
-      return axios.post('/api/memo/star/' + id)
+    return axios.post('/api/memo/star/' + id)
       .then((response) => {
-          dispatch(memoStarSuccess(index, response.data.memo));
+        dispatch(memoStarSuccess(index, response.data.memo));
       }).catch((error) => {
-          dispatch(memoStarFailure(error.response.data.code));
+        dispatch(memoStarFailure(error.response.data.code));
       });
   };
 }
 
 export function memoStar() {
   return {
-      type: MEMO_STAR
+    type: MEMO_STAR
   };
 }
 
 export function memoStarSuccess(index, memo) {
   return {
-      type: MEMO_STAR_SUCCESS,
-      index,
-      memo
+    type: MEMO_STAR_SUCCESS,
+    index,
+    memo
   };
 }
 
 export function memoStarFailure(error) {
-  return{
-      type: MEMO_STAR_FAILURE,
-      error
+  return {
+    type: MEMO_STAR_FAILURE,
+    error
   };
 }
