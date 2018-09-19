@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Header } from 'components'
 import { connect } from 'react-redux';
 import { getStatusRequest, logoutRequest } from 'actions/authentication';
+import { searchRequest } from 'actions/search';
 
 class App extends React.Component {
 
@@ -63,6 +64,10 @@ class App extends React.Component {
     );
   }
 
+  handleSearch = (keyword) => {
+    this.props.searchRequest(keyword);
+  }
+
   render() {
     /* Check whether current route is login or register using regex */
     const re = /(login|register)/;
@@ -71,15 +76,20 @@ class App extends React.Component {
     return (
       <React.Fragment>
         {isAuth ? undefined : <Header isLoggedIn={this.props.status.isLoggedIn}
-                                      onLogout={this.handleLogout} />}
+          onLogout={this.handleLogout}
+          onSearch={this.handleSearch}
+          usernames={this.props.searchResults}
+          history={this.props.history} />}
+
       </React.Fragment>
-    )
+    );
   }
 }
 
 const mapStateToProps = (state) => {
   return {
-    status: state.authentication.status
+    status: state.authentication.status,
+    searchResults: state.search.usernames
   }
 }
 
@@ -90,6 +100,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     logoutRequest: () => {
       return dispatch(logoutRequest());
+    },
+    searchRequest: (keyword) => {
+      return dispatch(searchRequest(keyword));
     }
   }
 }

@@ -52,6 +52,21 @@ class Memo extends React.Component {
     $('.dropdown-button').dropdown();
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    const current = {
+      props: this.props,
+      state: this.state
+    };
+
+    const next = {
+      props: nextProps,
+      state: nextState
+    };
+
+    const update = JSON.stringify(current) !== JSON.stringify(next);
+    return update;
+  }
+
   componentDidMount() {
     // WHEN COMPONENT MOUNTS, INITIALIZE DROPDOWN
     // (TRIGGERED WHEN REFRESHED)
@@ -59,7 +74,6 @@ class Memo extends React.Component {
   }
 
   render() {
-
     // IF IT IS STARRED ( CHECKS WHETHER THE NICKNAME EXISTS IN THE ARRAY )
     // RETURN STYLE THAT HAS A YELLOW COLOR
     const starStyle = (this.props.data.starred.indexOf(this.props.currentUser) > -1) ? { color: '#ff9980' } : {};

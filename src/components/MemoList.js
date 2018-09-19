@@ -4,6 +4,13 @@ import PropTypes from 'prop-types';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 class MemoList extends React.Component {
+
+  shouldComponentUpdate(nextProps, nextState) {
+    // 리턴값이  true 이면 render 메소드 실행
+    const update = JSON.stringify(this.props) !== JSON.stringify(nextProps);
+    return update;
+  }
+
   render() {
     const mapToComponents = data => {
       return data.map((memo, i) => {
@@ -51,7 +58,7 @@ MemoList.defaultProps = {
     console.error('remove function not defined');
   },
   onStar: (id, index) => {
-      console.error('star function not defined');
+    console.error('star function not defined');
   }
 };
 
